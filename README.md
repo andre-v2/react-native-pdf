@@ -12,54 +12,28 @@ A react native PDF view component (cross-platform support)
 * support password protected pdf
 * jump to a specific page in the pdf
 
-### Supported versions
-We use [`rn-fetch-blob`](https://github.com/joltup/rn-fetch-blob) to handle file system access in this package,
-So you should install react-native-pdf and rn-fetch-blob
+### Supported versions - React Native / react-native-pdf
 
-> The table below shows the supported versions of React Native and rn-fetch-blob for different versions of `react-native-pdf`.
+> The table below shows the supported versions of React Native for different versions of `react-native-pdf`.
 
-| React Native              | 0.4x - 0.56     | 0.57    | 0.60+    | 0.62+    |
-| ------------------------- | --------------- | ------- | -------- | -------- |
-| react-native-pdf          | 4.x.x - 5.0.x   | 5.0.9+  | 6.0.0+   | 6.2.0+   |
-| rn-fetch-blob             | 0.10.15         | 0.10.15 | 0.11.0+  | 0.11.0+  |
-| progress-bar-android      |                 |         |          | 1.0.3+   |
-| progress-view             |                 |         |          | 1.0.3+   |
+| react-native-pdf          |  4.x.x - 5.0.x   |      5.0.9+      |
+| ------------------------- | :------: | :-------------: |
+| React Native              | 0.4x - 0.56  |  ^0.57  |
 
 ### Installation
+We use [`rn-fetch-blob`](https://github.com/joltup/rn-fetch-blob) to handle file system access in this package,
+So you should install react-native-pdf and rn-fetch-blob
+*Notice: rn-fetch-blob v0.10.14 has a bug, please use v0.10.13*
 
 ```bash
-# Using npm
-npm install react-native-pdf rn-fetch-blob @react-native-community/progress-bar-android @react-native-community/progress-view --save
+npm install rn-fetch-blob --save
+npm install react-native-pdf --save
 
-# or using yarn:
-yarn add react-native-pdf rn-fetch-blob @react-native-community/progress-bar-android @react-native-community/progress-view
-```
-
-Then follow the instructions for your platform to link react-native-pdf into your project:
-
-### iOS installation
-<details>
-  <summary>iOS details</summary>
-
-**React Native 0.60 and above**
-
-Run `pod install` in the `ios` directory. Linking is not required in React Native 0.60 and above.
-
-**React Native 0.59 and below**
-
-```bash
 react-native link rn-fetch-blob
-react-native link @react-native-community/progress-bar-android
-react-native link @react-native-community/progress-view
 react-native link react-native-pdf
 ```
-</details>
 
-### Android installation
-<details>
-  <summary>Android details</summary>
-
-**If you use RN 0.59.0 and above**, please add following to your android/app/build.gradle**
+**if you use RN 0.59.0+, please add following to your android/app/build.gradle**
 ```diff
 android {
 
@@ -75,33 +49,20 @@ android {
    }
 ```
 
-**React Native 0.59.0 and below**
-```bash
-react-native link rn-fetch-blob
-react-native link @react-native-community/progress-bar-android
-react-native link @react-native-community/progress-view
-react-native link react-native-pdf
-```
-
-
-</details>
-
 ### FAQ
-<details>
-  <summary>FAQ details</summary>
 
-Q1. After installation and running, I can not see the pdf file.
+Q1. After installation and running, I can not see the pdf file.  
 A1: maybe you forgot to excute ```react-native link``` or it does not run correctly.
 You can add it manually. For detail you can see the issue [`#24`](https://github.com/wonday/react-native-pdf/issues/24) and [`#2`](https://github.com/wonday/react-native-pdf/issues/2)
 
-Q2. When running, it shows ```'Pdf' has no propType for native prop RCTPdf.acessibilityLabel of native type 'String'```
+Q2. When running, it shows ```'Pdf' has no propType for native prop RCTPdf.acessibilityLabel of native type 'String'```  
 A2. Your react-native version is too old, please upgrade it to 0.47.0+ see also [`#39`](https://github.com/wonday/react-native-pdf/issues/39)
 
-Q3. When I run the example app I get a white/gray screen / the loading bar isn't progressing .
+Q3. When I run the example app I get a white/gray screen / the loading bar isn't progressing .  
 A3. Check your uri, if you hit a pdf that is hosted on a `http` you will need to do the following:
 
 **iOS:**
-add an exception for the server hosting the pdf in the ios `info.plist`. Here is an example :
+add an exception for the server hosting the pdf in the ios `info.plist`. Here is an example :  
 
 ```
 <key>NSAppTransportSecurity</key>
@@ -127,7 +88,7 @@ add an exception for the server hosting the pdf in the ios `info.plist`. Here is
 **Android:**
 [`see here`](https://stackoverflow.com/questions/54818098/cleartext-http-traffic-not-permitted)
 
-Q4. why doesn't it work with react native expo?.
+Q4. why doesn't it work with react native expo?.  
 A4. Expo does not support native module. you can read more expo caveats [`here`](https://facebook.github.io/react-native/docs/getting-started.html#caveats)
 
 Q5. Why can't I run the iOS example? `'Failed to build iOS project. We ran "xcodebuild" command but it exited with error code 65.'`
@@ -139,70 +100,44 @@ pod install
 cd ..
 react-native run-ios
 ```
-</details>
+
 
 ### ChangeLog
-<details>
-  <summary>ChangeLog details</summary>
-
-v6.2.2
-1. Fixed incorrect type of onPageSingleTap and onScaleChanged argument
-2. Fixed included missing setPage method in TypeScript and Flow types
-3. fixed Xcode 12 compatibility
-
-v6.2.1
-1. Fixed typescript `onLoadComplete()` definition
-2. Switched the AndroidPdfViewer dependency from Barteksc repo to TalbotGooday
-3. Add singlePage property
-
-v6.2.0
-1. Fixed ReferenceError, url should be source.uri
-2. Dependency bump to support React-Native >= 0.62
-
-v6.1.2
-1. Fixed wrong scale returned from onScaleChanged()
-2. Fixed iOS Double Tap zoom
-3. Fixed Some critical typo fixes
-
-v6.1.1
-1. Fixed undefined is not an object, crashing on ios
-
-v6.1.0
-1. Fixed react-native warning on `componentWill*`
-2. Fixed onPageSingleTap
-3. Set the PDF View background color to be transparent On iOS
-
-v6.0.1
-1. Expose prop to trust self-signed SSL certs
-2. Use ViewStyleProp in index.js.flow, not deprecated StyleSheet.Styles
-
-v6.0.0
-1. Add JS callback onPressLink for pdf link press listener
-2. Fix calling setState while unmounted
 
 v5.1.7
-1. Downgraded to AndroidPdfViewer 3.1.0-beta.1
+1. downgrade to AndroidPdfViewer 3.1.0-beta.1
 
 v5.1.6
-1. Fixed componentWillReceiveProps and componentWillMount warnings
+1. fix componentWillReceiveProps and componentWillMount warnings
 
 v5.1.5
-1. Added setPage() method
-2. Upgraded to AndroidPdfViewer to 3.2.0-beta.1
-3. Fixed some codes ,readme and sample
+1. add setPage() method
+2. upgrade to AndroidPdfViewer to 3.2.0-beta.1
+3. fix some codes ,readme and sample
 
 v5.1.4
-1. Updated example project to RN 0.60.4
-2. Fixed blank view after native module got recycled in onDetachedFromWindow event
-3. Restore singleTap, only callback, do not change scale
+1. Update example project to RN 0.60.4
+2. fix blank view after native module got recycled in onDetachedFromWindow event
+3. restore singleTap, only callback, do not change scale
 
 v5.1.3
-1. Removed singleTap action from iOS, make the same with Android.
+1. remove singleTap action from iOS, make the same with Android.
 
+v5.1.2
+1. fix overflow when zoom on Android
+
+v5.1.1
+1. call onScaleChanged when tapped on iOS
+2. fix overflow when zoom
+3. add packagingOptions for Detox e2e tests build and androidTest target
+4. add activityIndicatorProps to index.d.ts
+
+v5.1.0
+1. remove encodeURI(), **Degrade Notice: If you use Chinese/Japanese/Korean path, please encodeURI() yourself**
+2. fix enableAnnotationRendering on iOS
+3. Trusting certificates for api http redirection
 
 [[more]](https://github.com/wonday/react-native-pdf/releases)
-
-</details>
 
 ### Example
 
@@ -227,7 +162,7 @@ export default class PDFExample extends React.Component {
         //const source = {uri:'bundle-assets://test.pdf'};
 
         //const source = {uri:'file:///sdcard/test.pdf'};
-        //const source = {uri:"data:application/pdf;base64,JVBERi0xLjcKJc..."};
+        //const source = {uri:"data:application/pdf;base64,..."};
 
         return (
             <View style={styles.container}>
@@ -241,9 +176,6 @@ export default class PDFExample extends React.Component {
                     }}
                     onError={(error)=>{
                         console.log(error);
-                    }}
-                    onPressLink={(uri)=>{
-                        console.log(`Link presse: ${uri}`)
                     }}
                     style={styles.pdf}/>
             </View>
@@ -289,15 +221,12 @@ const styles = StyleSheet.create({
 | enablePaging  | bool            | false        | only show one page in screen   | ✔ | ✔ | 5.0.1 |
 | enableRTL  | bool            | false        | scroll page as "page3, page2, page1"  | ✔   | ✖ | 5.0.1 |
 | enableAnnotationRendering  | bool            | true        | enable rendering annotation, notice:iOS only support initial setting,not support realtime changing  | ✔ | ✔ | 5.0.3 |
-| trustAllCerts  | bool            | true        | Allow connections to servers with self-signed certification  | ✔ | ✔ | 6.0.? |
-| singlePage  | bool  | false | Only show first page, useful for thumbnail views | ✔ | ✔ | 6.1.2 |
 | onLoadProgress      | function(percent) | null        | callback when loading, return loading progress (0-1) | ✔   | ✔ | <3.0 |
 | onLoadComplete      | function(numberOfPages, path, {width, height}, tableContents) | null        | callback when pdf load completed, return total page count, pdf local/cache path, {width,height} and table of contents | ✔   | ✔ | <3.0 |
 | onPageChanged       | function(page,numberOfPages)  | null        | callback when page changed ,return current page and total page count | ✔   | ✔ | <3.0 |
 | onError       | function(error) | null        | callback when error happened | ✔   | ✔ | <3.0 |
 | onPageSingleTap   | function(page)  | null        | callback when page was single tapped | ✔ | ✔ | 3.0 |
 | onScaleChanged    | function(scale) | null        | callback when scale page | ✔ | ✔ | 3.0 |
-| onPressLink       | function(uri)   | null        | callback when link tapped | ✔ | ✔ | 6.0.0 |
 
 #### parameters of source
 
@@ -317,7 +246,7 @@ const styles = StyleSheet.create({
 | `{require("./test.pdf")}` | load pdf relate to js file (do not need add by xcode) | ✔ | ✖ |
 | `{uri:"bundle-assets://path/to/xxx.pdf"}` | load pdf from assets, the file should be at android/app/src/main/assets/path/to/xxx.pdf | ✖ | ✔ |
 | `{uri:"bundle-assets://xxx.pdf"}` | load pdf from assets, you must add pdf to project by xcode. this does not support folder. | ✔ | ✖ |
-| `{uri:"data:application/pdf;base64,JVBERi0xLjcKJc..."}` | load pdf from base64 string | ✔   | ✔ |
+| `{uri:"base64data"}` | load pdf from base64 string | ✔   | ✔ |
 | `{uri:"file:///absolute/path/to/xxx.pdf"}` | load pdf from local file system | ✔   | ✔ |
 
 

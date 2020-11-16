@@ -9,13 +9,6 @@
 import * as React from 'react';
 import * as ReactNative from 'react-native';
 
-export type TableContent = {
-    children: TableContent[],
-    mNativePtr: number,
-    pageIdx: number,
-    title: string,
-};
-
 interface Props {
     style?: ReactNative.StyleProp<ReactNative.ViewStyle>,
     source: object,
@@ -33,19 +26,15 @@ interface Props {
     enableRTL?: boolean,
     enableAnnotationRendering?: boolean,
     fitPolicy?: number,
-    trustAllCerts?: boolean,
-    singlePage?: boolean,
     onLoadProgress?: (percent: number,) => void,
-    onLoadComplete?: (numberOfPages: number, path: string, size: {height: number, width: number}, tableContents?: TableContent[]) => void,
+    onLoadComplete?: (numberOfPages: number, path: string) => void,
     onPageChanged?: (page: number, numberOfPages: number) => void,
     onError?: (error: object) => void,
-    onPageSingleTap?: (page: number, x: number, y: number) => void,
+    onPageSingleTap?: (page: number) => void,
     onScaleChanged?: (scale: number) => void,
-    onPressLink?: (url: string) => void,
 }
 
 declare class Pdf extends React.Component<Props, any> {
-    setPage: (pageNumber: number) => void;
 }
 
 export default Pdf;

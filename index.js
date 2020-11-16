@@ -13,17 +13,16 @@ import {
     requireNativeComponent,
     View,
     Platform,
+    ProgressBarAndroid,
+    ProgressViewIOS,
     ViewPropTypes,
-    StyleSheet,
-    Image
+    StyleSheet
 } from 'react-native';
-
-import { ProgressBar } from '@react-native-community/progress-bar-android'
-import { ProgressView } from '@react-native-community/progress-view'
 
 import RNFetchBlob from 'rn-fetch-blob';
 
 const SHA1 = require('crypto-js/sha1');
+import resolveAssetSource from 'react-native/Libraries/Image/resolveAssetSource';
 import PdfView from './PdfView';
 
 export default class Pdf extends Component {
@@ -54,14 +53,11 @@ export default class Pdf extends Component {
         enablePaging: PropTypes.bool,
         enableRTL: PropTypes.bool,
         fitPolicy: PropTypes.number,
-        trustAllCerts: PropTypes.bool,
-        singlePage: PropTypes.bool,
         onLoadComplete: PropTypes.func,
         onPageChanged: PropTypes.func,
         onError: PropTypes.func,
         onPageSingleTap: PropTypes.func,
         onScaleChanged: PropTypes.func,
-        onPressLink: PropTypes.func,
 
         // Props that are not available in the earlier react native version, added to prevent crashed on android
         accessibilityLabel: PropTypes.string,
@@ -87,9 +83,6 @@ export default class Pdf extends Component {
         enablePaging: false,
         enableRTL: false,
         activityIndicatorProps: {color: '#009900', progressTintColor: '#009900'},
-        trustAllCerts: true,
-        usePDFKit: true,
-        singlePage: false,
         onLoadProgress: (percent) => {
         },
         onLoadComplete: (numberOfPages, path) => {
@@ -101,8 +94,6 @@ export default class Pdf extends Component {
         onPageSingleTap: (page, x, y) => {
         },
         onScaleChanged: (scale) => {
-        },
-        onPressLink: (url) => {
         },
     };
 
@@ -122,8 +113,8 @@ export default class Pdf extends Component {
 
     componentDidUpdate(prevProps) {
 
-        const nextSource = Image.resolveAssetSource(this.props.source);
-        const curSource = Image.resolveAssetSource(prevProps.source);
+        const nextSource = resolveAssetSource(this.props.source);
+        const curSource = resolveAssetSource(prevProps.source);
 
         if ((nextSource.uri !== curSource.uri)) {
             // if has download task, then cancel it.
@@ -139,20 +130,17 @@ export default class Pdf extends Component {
     }
 
     componentDidMount() {
-        this._mounted = true;
         if (Platform.OS === "ios") {
             const PdfViewManagerNative = require('react-native').NativeModules.PdfViewManager;
             PdfViewManagerNative.supportPDFKit((isSupportPDFKit) => {
-                if (this._mounted) {
-                    this.setState({isSupportPDFKit: isSupportPDFKit ? 1 : 0});
-                }
+                this.setState({isSupportPDFKit: isSupportPDFKit ? 1 : 0});
             });
         }
         this._loadFromSource(this.props.source);
     }
 
     componentWillUnmount() {
-        this._mounted = false;
+
         if (this.lastRNBFTask) {
             this.lastRNBFTask.cancel(err => {
             });
@@ -163,14 +151,12 @@ export default class Pdf extends Component {
 
     _loadFromSource = (newSource) => {
 
-        const source = Image.resolveAssetSource(newSource) || {};
+        const source = resolveAssetSource(newSource) || {};
 
         let uri = source.uri || '';
 
         // first set to initial state
-        if (this._mounted) {
-            this.setState({isDownloaded: false, path: '', progress: 0});
-        }
+        this.setState({isDownloaded: false, path: '', progress: 0});
 
         const cacheFile = RNFetchBlob.fs.dirs.CacheDir + '/' + SHA1(uri) + '.pdf';
 
@@ -179,9 +165,7 @@ export default class Pdf extends Component {
                 .stat(cacheFile)
                 .then(stats => {
                     if (!Boolean(source.expiration) || (source.expiration * 1000 + stats.lastModified) > (new Date().getTime())) {
-                        if (this._mounted) {
-                            this.setState({path: cacheFile, isDownloaded: true});
-                        }
+                        this.setState({path: cacheFile, isDownloaded: true});
                     } else {
                         // cache expirated then reload it
                         this._prepareFile(source);
@@ -217,9 +201,7 @@ export default class Pdf extends Component {
                     RNFetchBlob.fs
                         .cp(uri, cacheFile)
                         .then(() => {
-                            if (this._mounted) {
-                                this.setState({path: cacheFile, isDownloaded: true, progress: 1});
-                            }
+                            this.setState({path: cacheFile, isDownloaded: true, progress: 1});
                         })
                         .catch(async (error) => {
                             this._unlinkFile(cacheFile);
@@ -230,21 +212,17 @@ export default class Pdf extends Component {
                     RNFetchBlob.fs
                         .writeFile(cacheFile, data, 'base64')
                         .then(() => {
-                            if (this._mounted) {
-                                this.setState({path: cacheFile, isDownloaded: true, progress: 1});
-                            }
+                            this.setState({path: cacheFile, isDownloaded: true, progress: 1});
                         })
                         .catch(async (error) => {
                             this._unlinkFile(cacheFile);
                             this._onError(error)
                         });
                 } else {
-                    if (this._mounted) {
-                       this.setState({
-                            path: uri.replace(/file:\/\//i, ''),
-                            isDownloaded: true,
-                        });
-                    }
+                    this.setState({
+                        path: uri.replace(/file:\/\//i, ''),
+                        isDownloaded: true,
+                    });
                 }
             } else {
                 this._onError(new Error('no pdf source!'));
@@ -270,7 +248,7 @@ export default class Pdf extends Component {
         this.lastRNBFTask = RNFetchBlob.config({
             // response data will be saved to this path if it has access right.
             path: tempCacheFile,
-            trusty: this.props.trustAllCerts,
+            trusty: true,
         })
             .fetch(
                 source.method ? source.method : 'GET',
@@ -281,9 +259,7 @@ export default class Pdf extends Component {
             // listen to download progress event
             .progress((received, total) => {
                 this.props.onLoadProgress && this.props.onLoadProgress(received / total);
-                if (this._mounted) {
-                    this.setState({progress: received / total});
-                }
+                this.setState({progress: received / total});
             });
 
         this.lastRNBFTask
@@ -299,16 +275,16 @@ export default class Pdf extends Component {
                         const fileStats = await RNFetchBlob.fs.stat(res.path());
 
                         if (!fileStats || !fileStats.size) {
-                            throw new Error("FileNotFound:" + source.uri);
+                            throw new Error("FileNotFound:" + url);
                         }
 
                         actualContentLength = fileStats.size;
                     } catch (error) {
-                        throw new Error("DownloadFailed:" + source.uri);
+                        throw new Error("DownloadFailed:" + url);
                     }
 
                     if (expectedContentLength != actualContentLength) {
-                        throw new Error("DownloadFailed:" + source.uri);
+                        throw new Error("DownloadFailed:" + url);
                     }
                 }
 
@@ -316,9 +292,7 @@ export default class Pdf extends Component {
                 RNFetchBlob.fs
                     .cp(tempCacheFile, cacheFile)
                     .then(() => {
-                        if (this._mounted) {
-                            this.setState({path: cacheFile, isDownloaded: true, progress: 1});
-                        }
+                        this.setState({path: cacheFile, isDownloaded: true, progress: 1});
                         this._unlinkFile(tempCacheFile);
                     })
                     .catch(async (error) => {
@@ -375,11 +349,9 @@ export default class Pdf extends Component {
             } else if (message[0] === 'error') {
                 this._onError(new Error(message[1]));
             } else if (message[0] === 'pageSingleTap') {
-                this.props.onPageSingleTap && this.props.onPageSingleTap(Number(message[1]), Number(message[2]), Number(message[3]));
+                this.props.onPageSingleTap && this.props.onPageSingleTap(message[1], message[2], message[3]);
             } else if (message[0] === 'scaleChanged') {
-                this.props.onScaleChanged && this.props.onScaleChanged(Number(message[1]));
-            } else if (message[0] === 'linkPressed') {
-                this.props.onPressLink && this.props.onPressLink(message[1]);
+                this.props.onScaleChanged && this.props.onScaleChanged(message[1]);
             }
         }
 
@@ -392,6 +364,7 @@ export default class Pdf extends Component {
     };
 
     render() {
+
         if (Platform.OS === "android" || Platform.OS === "ios") {
                 return (
                     <View style={[this.props.style,{overflow: 'hidden'}]}>
@@ -402,14 +375,14 @@ export default class Pdf extends Component {
                                 {this.props.activityIndicator
                                     ? this.props.activityIndicator
                                     : Platform.OS === 'android'
-                                        ? <ProgressBar
+                                        ? <ProgressBarAndroid
                                             progress={this.state.progress}
                                             indeterminate={false}
                                             styleAttr="Horizontal"
                                             style={styles.progressBar}
                                             {...this.props.activityIndicatorProps}
                                         />
-                                        : <ProgressView
+                                        : <ProgressViewIOS
                                             progress={this.state.progress}
                                             style={styles.progressBar}
                                             {...this.props.activityIndicatorProps}
@@ -424,7 +397,7 @@ export default class Pdf extends Component {
                                             onChange={this._onChange}
                                         />
                                     ):(
-                                        this.props.usePDFKit && this.state.isSupportPDFKit === 1?(
+                                        this.state.isSupportPDFKit === 1?(
                                                 <PdfCustom
                                                     ref={component => (this._root = component)}
                                                     {...this.props}
@@ -441,7 +414,6 @@ export default class Pdf extends Component {
                                                 onError={this._onError}
                                                 onPageSingleTap={this.props.onPageSingleTap}
                                                 onScaleChanged={this.props.onScaleChanged}
-                                                onPressLink={this.props.onPressLink}
                                             />)
                                     )
                                 )}
